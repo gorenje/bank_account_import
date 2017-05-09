@@ -23,7 +23,7 @@ module BankAccountImport
       end
 
       def _to_f(str)
-        str.split(/ /).first.gsub(/[.]/,'').to_f
+        str.split(/ /).first.gsub(/[.]/,'').gsub(/[,]/,'.').to_f
       end
 
       def parse_data
@@ -32,7 +32,7 @@ module BankAccountImport
         details = AccountDetails.new
         details.iban           = csv_content[4].last
         details.closing_amount = _to_f(csv_content[5].last)
-        details.owner          = ic.iconv(csv_content[1].last)
+        details.owner          = csv_content[1].last.try(:force_encoding,"UTF-8")
         details.account_number = csv_content[3].last
         details.blz            = csv_content[2].last
 
@@ -47,10 +47,10 @@ module BankAccountImport
             t.booking_date = _date(csv_line.first)
             t.entry_date   = _date(csv_line[1])
             t.amount       = _to_f(csv_line[-2])
-            t.recipient    = csv_line[-3]
-            t.sender       = csv_line[-4]
-            t.description  = csv_line[3]
-            t.type         = csv_line[2]
+            t.recipient    = csv_line[-3].try(:force_encoding,"UTF-8")
+            t.sender       = csv_line[-4].try(:force_encoding,"UTF-8")
+            t.description  = csv_line[3].try(:force_encoding,"UTF-8")
+            t.type         = csv_line[2].try(:force_encoding,"UTF-8")
             t.currency     = details.currency
 
             details.set_closing_and_opening_dates(t.booking_date,t.entry_date)

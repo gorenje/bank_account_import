@@ -44,9 +44,9 @@ module BankAccountImport
             t.entry_date     = _date(csv_line[1])
             t.currency       = csv_line.last
             t.amount         = _to_f(csv_line[-3])
-            t.description    = csv_line[4]
-            t.recipient      = csv_line[3]
-            t.type           = csv_line[2]
+            t.description    = csv_line[4].try(:force_encoding,"UTF-8")
+            t.recipient      = csv_line[3].try(:force_encoding,"UTF-8")
+            t.type           = csv_line[2].try(:force_encoding,"UTF-8")
             t.recipient_iban = csv_line[5]
 
             details.set_closing_and_opening_dates(t.booking_date,t.entry_date)
