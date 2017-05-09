@@ -17,15 +17,27 @@ module BankAccountImport
         false
       end
 
-      def find_importer_for(file_content)
-        csv_content = []
-        CSV.new(file_content.force_encoding('ISO-8859-1'),
-                :col_sep => ";", :quote_char => '"').
-          each_with_index do |a, idx|
-          csv_content[idx] = a
+      def to_csv_content(file_content)
+        csv_content = [].tap do |content|
+          CSV.new(file_content.force_encoding('ISO-8859-1'),
+                  :col_sep => ";", :quote_char => '"').
+            each_with_index do |a, idx|
+            content[idx] = a
+          end
         end
+      end
 
+      def find_importer_for(file_content)
+        csv_content = to_csv_content(file_content)
         @subclasses.select { |klazz| klazz.supported?(csv_content) }.first
+      end
+
+      def import_data(file_content)
+        self.new(to_csv_content(file_content)).parse_data
+      end
+
+      def bank_name
+        self.name.split(/::/).last
       end
     end
 

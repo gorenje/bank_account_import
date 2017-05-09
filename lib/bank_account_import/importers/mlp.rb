@@ -31,14 +31,15 @@ module BankAccountImport
 
         transactions = csv_content[13..-4].map do |csv_line|
           Transaction.new(csv_line).tap do |t|
-            t.date         = _date(csv_line[0])
+            t.booking_date = _date(csv_line[0])
             t.entry_date   = _date(csv_line[1])
             t.currency     = csv_line[-3]
             t.amount       = _p_or_n(csv_line[-2], csv_line.last)
-            t.recipient    = csv_line[3]
             t.sender       = csv_line[2]
-            t.iban         = csv_line[5]
+            t.recipient    = csv_line[3]
+            t.sender_iban  = csv_line[5]
             t.description  = csv_line[8]
+            details.iban = t.sender_iban
           end
         end
 

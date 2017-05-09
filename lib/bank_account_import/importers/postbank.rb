@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+require 'iconv'
+
 module BankAccountImport
   module Importer
     class Postbank < BaseImporter
@@ -31,6 +34,13 @@ module BankAccountImport
         details.account_number = csv_content[3].last
         details.blz            = csv_content[2].last
 
+        ic = Iconv.new('UTF-8', 'WINDOWS-1252')
+        if ic.iconv(csv_content[5].last)[-1] == "€"
+          details.currency = "EUR"
+        else
+          _raise_error("Expecting euro symbol in data")
+        end
+
         transactions = csv_content[9..-1].map do |csv_line|
           Transaction.new(csv_line).tap do |t|
             t.booking_date = _date(csv_line.first)
@@ -39,6 +49,10 @@ module BankAccountImport
             t.recipient    = csv_line[-3]
             t.sender       = csv_line[-4]
             t.description  = csv_line[3]
+            t.type         = csv_line[2]
+            t.currency     = details.currency
+
+            details.set_closing_and_opening_dates(t.booking_date,t.entry_date)
           end
         end
 

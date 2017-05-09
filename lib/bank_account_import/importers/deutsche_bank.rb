@@ -26,23 +26,30 @@ module BankAccountImport
         end
 
         details = AccountDetails.new
-        details.start_date      = _date(csv_content[1].first.split(/ - /).first)
-        details.end_date        = _date(csv_content[1].first.split(/ - /).last)
-        details.customer_number = csv_content.first.last
+        details.opening_date    = _date(csv_content[1].first.split(/ - /).first)
+        details.closing_date    = _date(csv_content[1].first.split(/ - /).last)
+
+        if csv_content.first.first =~ /Kontokorrentkonto \((.+)\)/
+          ac = $1
+          details.account_number = csv_content.first.last.split(/ /).last + ac
+        end
+
         details.opening_amount  = _to_f(csv_content[2][-2])
         details.closing_amount  = _to_f(csv_content.last[-2])
         details.currency        = csv_content[2].last
 
         transactions = csv_content[5..-2].map do |csv_line|
           Transaction.new(csv_line).tap do |t|
-            t.date        = _date(csv_line.first)
-            t.entry_date  = _date(csv_line[1])
-            t.currency    = csv_line.last
-            t.amount      = _to_f(csv_line[-3])
-            t.description = csv_line[4]
-            t.recipient   = csv_line[3]
-            t.type        = csv_line[2]
-            t.iban        = csv_line[5]
+            t.booking_date   = _date(csv_line.first)
+            t.entry_date     = _date(csv_line[1])
+            t.currency       = csv_line.last
+            t.amount         = _to_f(csv_line[-3])
+            t.description    = csv_line[4]
+            t.recipient      = csv_line[3]
+            t.type           = csv_line[2]
+            t.recipient_iban = csv_line[5]
+
+            details.set_closing_and_opening_dates(t.booking_date,t.entry_date)
           end
         end
 
