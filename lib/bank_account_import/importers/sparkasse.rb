@@ -52,7 +52,6 @@ module BankAccountImport
           end
         end
 
-        puts details
         [details,transactions]
       end
     end
@@ -94,7 +93,6 @@ module BankAccountImport
           end
         end
 
-        puts details
         [details,transactions]
       end
     end

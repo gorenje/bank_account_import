@@ -27,14 +27,15 @@ module BankAccountImport
       end
 
       def parse_data
+        ic = Iconv.new('UTF-8', 'WINDOWS-1252')
+
         details = AccountDetails.new
         details.iban           = csv_content[4].last
         details.closing_amount = _to_f(csv_content[5].last)
-        details.owner          = csv_content[1].last
+        details.owner          = ic.iconv(csv_content[1].last)
         details.account_number = csv_content[3].last
         details.blz            = csv_content[2].last
 
-        ic = Iconv.new('UTF-8', 'WINDOWS-1252')
         if ic.iconv(csv_content[5].last)[-1] == "€"
           details.currency = "EUR"
         else
