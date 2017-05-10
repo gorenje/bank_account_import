@@ -19,10 +19,18 @@ module BankAccountImport
 
       def to_csv_content(file_content)
         csv_content = [].tap do |content|
-          CSV.new(file_content.force_encoding('ISO-8859-1'),
-                  :col_sep => ";", :quote_char => '"').
-            each_with_index do |a, idx|
-            content[idx] = a
+          begin
+            CSV.new(file_content.force_encoding('ISO-8859-1'),
+                    :col_sep => ";", :quote_char => '"').
+              each_with_index do |a, idx|
+              content[idx] = a
+            end
+          rescue CSV::MalformedCSVError => e
+            CSV.new(file_content.force_encoding('ISO-8859-1'),
+                    :col_sep => ",", :quote_char => '"').
+              each_with_index do |a, idx|
+              content[idx] = a
+            end
           end
         end
       end
